@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-08-10">
-<meta name="description" content="Predicting representations instead of data, and why that fits materials science.">
+<meta name="author" content="Aaron Lin">
+<meta name="dcterms.date" content="2026-08-12">
 
-<title>Why JEPA For Materials Property Prediction – Aaron Lin’s JEPA Blog</title>
+<title>An Introduction to Joint Embedding Predictive Architectures – Aaron Lin’s JEPA Blog</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -28,7 +28,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -80,7 +99,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner">
@@ -122,28 +141,25 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Why JEPA For Materials Property Prediction</h1>
-                  <div>
-        <div class="description">
-          Predicting representations instead of data, and why that fits materials science.
-        </div>
-      </div>
-                          <div class="quarto-categories">
-                <div class="quarto-category">JEPA</div>
-                <div class="quarto-category">materials</div>
-                <div class="quarto-category">ML</div>
-              </div>
-                  </div>
+      <h1 class="title">An Introduction to Joint Embedding Predictive Architectures</h1>
+            <p class="subtitle lead">From the JEPA recipe to latent-space property prediction in materials science</p>
+                      </div>
   </div>
     
   
   <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Aaron Lin </p>
+            </div>
+    </div>
       
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 10, 2026</p>
+        <p class="date">August 12, 2026</p>
       </div>
     </div>
     
@@ -154,7 +170,22 @@ ul.task-list li input[type="checkbox"] {
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#what-a-jepa-is" id="toc-what-a-jepa-is" class="nav-link active" data-scroll-target="#what-a-jepa-is">What a JEPA is</a></li>
+  <li><a href="#two-design-details-that-make-it-work" id="toc-two-design-details-that-make-it-work" class="nav-link" data-scroll-target="#two-design-details-that-make-it-work">Two design details that make it work</a></li>
+  <li><a href="#the-image-case-i-jepa" id="toc-the-image-case-i-jepa" class="nav-link" data-scroll-target="#the-image-case-i-jepa">The image case: I-JEPA</a></li>
+  <li><a href="#the-video-case-v-jepa-2" id="toc-the-video-case-v-jepa-2" class="nav-link" data-scroll-target="#the-video-case-v-jepa-2">The video case: V-JEPA 2</a></li>
+  <li><a href="#into-materials-science" id="toc-into-materials-science" class="nav-link" data-scroll-target="#into-materials-science">Into materials science</a></li>
+  <li><a href="#latent-space-vs.-coordinates" id="toc-latent-space-vs.-coordinates" class="nav-link" data-scroll-target="#latent-space-vs.-coordinates">Latent space vs.&nbsp;coordinates</a></li>
+  <li><a href="#where-this-is-going" id="toc-where-this-is-going" class="nav-link" data-scroll-target="#where-this-is-going">Where this is going</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
 
@@ -162,18 +193,87 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>Joint Embedding Predictive Architecture (JEPA) is defined by predicting the representation of missing data, not the data itself, a move described in LeCun’s 2022 position paper on autonomous machine intelligence. Mechanically, JEPA has 3 parts. First, a context encoder taking available data and producing an embedding. Second, a target encoder which produces an embedding of a masked chunk of data that the model tries to match. Third, a predictor, which takes the context embedding and some positional or mask tokens telling the predictor where the hidden data sits, and predicts the target embedding. The loss is a simple regression (usually L1/L2) in embedding space, where L1 is the absolute difference, and L2 is the Euclidean distance.</p>
-<p>Two design details do a lot of heavy lifting in making JEPA viable: the stop gradient on the target, and the exponential moving average relating the target encoder to the context encoder. The stop gradient makes it so that the target encoder is treated as only a regression target; gradients will not flow on that branch. This is done to prevent representation collapse. To keep updating the target, though, we relate the target and context with an EMA relation, adjusting the target encoder’s weights minutely for a change in the context encoder’s weights, allowing the teacher to grow according to the student’s improvements. Because the target encoder can decide what the target embedding looks like and improve that embedding in iterations, the model can learn to drop the unpredictable and keep only what is useful: the meaning of the target instead of everything about it. This is the entire benefit of the JEPA design: Encouraging representation that captures predictable and task-relevant information and structure, while discarding variability that is difficult or unnecessary to predict. Compared against MAE, which is forced to reproduce every detail, no matter its relevance, and contrastive methods, which need carefully engineered pairs, JEPA is less costly in both compute and labour.</p>
-<p>The JEPA lineage starts with I-JEPA. It takes an image, then tokenizes it into patches with a ViT. It samples one context block and several target blocks, encodes the context, and for each target block, feeds the context embedding plus the target block’s positional tokens into the predictor and regresses onto the EMA target encoder’s embedding of that block. Because prediction happens over blocks at a semantic level, the representations it learns are strong for downstream linear-probe and fine-tuning tasks, and it trains faster than pixel-reconstruction MAE at comparable quality. It is non-generative and non-contrastive, which means no decoder, pixel loss, negatives, or hand-designed augmentations. This is good news for predicting scientific data where “sensible” augmentations often don’t exist. The masking scale for the target block is a hyperparameter with physical meaning: make the target blocks too small, and the task collapses to low-level interpolation; too large and it becomes unpredictable. Thus, tuning the predictability band becomes the task at hand.</p>
-<p>The next prominent iteration of JEPA is V-JEPA 2. V-JEPA 2 predicts future states in a learned representation space, forcing the target encoder to represent motion and dynamics instead of pixels. It predicts a handful of latent features per frame instead of rendering a full image. This does have a tradeoff in that its outputs are only meaningful when fed back into a planner or a downstream probe. The ability for humans to view the prediction is given in exchange for a prediction that is cheap, abstract, and dynamically oriented rather than visually.</p>
-<p>But, as said before, JEPA also has an advantage in predicting scientific data, and the area I focus on now is Materials Science. Models in this lineage include graph JEPA, which shares many similarities with GNNs, showing that the JEPA recipe transfers well to graphs. From there, there are also polymer JEPA, fragment-based molecular JEPA, and Crys-JEPA.</p>
-<p>Polymer JEPA pretrains on polymer molecule graphs, then fine-tunes on downstream property prediction tasks. This model found that JEPA self-supervised pretraining enhances downstream performance, particularly when labelled data is very scarce, with improvements across all tested datasets. Concretely, they found an optimal context size around 60% of the full graph: roughly 10–15 atoms of a 20–25 atom polymer graph. The model is robust across a 50–80% context range, with degradation only when the context gets very small.</p>
-<p>Next, fragment-based molecular JEPA improves on the usual JEPA methodology by predicting fragments, such as functional groups, rather than node- and graph-level predictions. Node-level information and structures are usually blind to higher-order molecular dynamics and semantics, while graph-level approaches overlook fine-grained structures. The compromise is to predict at the fragment level in embedding space, which also serves as the correct unit for conveying meaning in chemistry.</p>
-<p>Crys-JEPA is the most distinctive in this lineage, as it does not solely rely on JEPA methodology. Instead, it takes advantage of JEPA’s low cost to use it as a screening method for more expensive yet more precise and accurate Density Functional Theory (DFT) calculations, saving time and compute. This model pretrains JEPA with an InfoNCE objective to build a crystal latent space, organized around formation energy. Similar to contrastive methods, formation energies with a small difference are grouped close by in the latent space, while larger differences appear farther apart. Thus, when prediction embeddings come through the model, their representation in latent space also conveys information on the general stability of the embedded crystal, saving much effort from DFT, allowing compute to be focused towards crystals which aren’t obviously unstable.</p>
+<section id="what-a-jepa-is" class="level2">
+<h2 class="anchored" data-anchor-id="what-a-jepa-is">What a JEPA is</h2>
+<p>Joint Embedding Predictive Architecture (JEPA) is defined by predicting the representation of missing data, not the data itself, a move described in LeCun’s 2022 position paper on autonomous machine intelligence <span class="citation" data-cites="lecun2022path">(<a href="#ref-lecun2022path" role="doc-biblioref">LeCun 2022</a>)</span>. Mechanically, JEPA has 3 parts. First, a context encoder taking available data and producing an embedding. Second, a target encoder which produces an embedding of a masked chunk of data that the model tries to match. Third, a predictor, which takes the context embedding and some positional or mask tokens telling the predictor where the hidden data sits, and predicts the target embedding <span class="citation" data-cites="lecun2022path assran2023ijepa">(<a href="#ref-lecun2022path" role="doc-biblioref">LeCun 2022</a>; <a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>)</span>. The loss is a simple regression (usually L1/L2) in embedding space, where L1 is the absolute difference, and L2 is the Euclidean distance.</p>
+</section>
+<section id="two-design-details-that-make-it-work" class="level2">
+<h2 class="anchored" data-anchor-id="two-design-details-that-make-it-work">Two design details that make it work</h2>
+<p>Two design details do a lot of heavy lifting in making JEPA viable: the stop gradient on the target, and the exponential moving average relating the target encoder to the context encoder <span class="citation" data-cites="assran2023ijepa">(<a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>)</span>. The stop gradient makes it so that the target encoder is treated as only a regression target; gradients will not flow on that branch. This is done to prevent representation collapse. To keep updating the target, though, we relate the target and context with an EMA relation, adjusting the target encoder’s weights minutely for a change in the context encoder’s weights, allowing the teacher to grow according to the student’s improvements <span class="citation" data-cites="assran2023ijepa">(<a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>)</span>.</p>
+<p>Because the target encoder can decide what the target embedding looks like and improve that embedding in iterations, the model can learn to drop the unpredictable and keep only what is useful: the meaning of the target instead of everything about it. This is the entire benefit of the JEPA design: Encouraging representation that captures predictable and task-relevant information and structure, while discarding variability that is difficult or unnecessary to predict. Compared against MAE, which is forced to reproduce every detail, no matter its relevance <span class="citation" data-cites="he2022mae">(<a href="#ref-he2022mae" role="doc-biblioref">He et al. 2022</a>)</span>, and contrastive methods, which need carefully engineered pairs <span class="citation" data-cites="oord2018cpc">(<a href="#ref-oord2018cpc" role="doc-biblioref">Oord et al. 2018</a>)</span>, JEPA is less costly in both compute and labour.</p>
+</section>
+<section id="the-image-case-i-jepa" class="level2">
+<h2 class="anchored" data-anchor-id="the-image-case-i-jepa">The image case: I-JEPA</h2>
+<p>The JEPA lineage starts with I-JEPA <span class="citation" data-cites="assran2023ijepa">(<a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>)</span>. It takes an image, then tokenizes it into patches with a ViT <span class="citation" data-cites="dosovitskiy2021vit">(<a href="#ref-dosovitskiy2021vit" role="doc-biblioref">Dosovitskiy et al. 2021</a>)</span>. It samples one context block and several target blocks, encodes the context, and for each target block, feeds the context embedding plus the target block’s positional tokens into the predictor and regresses onto the EMA target encoder’s embedding of that block <span class="citation" data-cites="assran2023ijepa">(<a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>)</span>. Because prediction happens over blocks at a semantic level, the representations it learns are strong for downstream linear-probe and fine-tuning tasks, and it trains faster than pixel-reconstruction MAE at comparable quality <span class="citation" data-cites="assran2023ijepa he2022mae">(<a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>; <a href="#ref-he2022mae" role="doc-biblioref">He et al. 2022</a>)</span>. It is non-generative and non-contrastive, which means no decoder, pixel loss, negatives, or hand-designed augmentations. This is good news for predicting scientific data where “sensible” augmentations often don’t exist. The masking scale for the target block is a hyperparameter with physical meaning: make the target blocks too small, and the task collapses to low-level interpolation; too large and it becomes unpredictable <span class="citation" data-cites="assran2023ijepa">(<a href="#ref-assran2023ijepa" role="doc-biblioref">Assran et al. 2023</a>)</span>. Thus, tuning the predictability band becomes the task at hand.</p>
+</section>
+<section id="the-video-case-v-jepa-2" class="level2">
+<h2 class="anchored" data-anchor-id="the-video-case-v-jepa-2">The video case: V-JEPA 2</h2>
+<p>The next prominent iteration of JEPA is V-JEPA 2 <span class="citation" data-cites="assran2025vjepa2">(<a href="#ref-assran2025vjepa2" role="doc-biblioref">Assran et al. 2025</a>)</span>. V-JEPA 2 predicts future states in a learned representation space, forcing the target encoder to represent motion and dynamics instead of pixels <span class="citation" data-cites="assran2025vjepa2">(<a href="#ref-assran2025vjepa2" role="doc-biblioref">Assran et al. 2025</a>)</span>. It predicts a handful of latent features per frame instead of rendering a full image. This does have a tradeoff in that its outputs are only meaningful when fed back into a planner or a downstream probe. The ability for humans to view the prediction is given in exchange for a prediction that is cheap, abstract, and dynamically oriented rather than visually.</p>
+</section>
+<section id="into-materials-science" class="level2">
+<h2 class="anchored" data-anchor-id="into-materials-science">Into materials science</h2>
+<p>But, as said before, JEPA also has an advantage in predicting scientific data, and the area I focus on now is Materials Science. Models in this lineage include graph JEPA, which shares many similarities with GNNs, showing that the JEPA recipe transfers well to graphs <span class="citation" data-cites="skenderi2023graphjepa">(<a href="#ref-skenderi2023graphjepa" role="doc-biblioref">Skenderi et al. 2023</a>)</span>. From there, there are also polymer JEPA <span class="citation" data-cites="piccoli2026polymerjepa">(<a href="#ref-piccoli2026polymerjepa" role="doc-biblioref">Piccoli et al. 2026</a>)</span>, fragment-based molecular JEPA <span class="citation" data-cites="fragjepa2026">(<a href="#ref-fragjepa2026" role="doc-biblioref">Wu et al. 2026</a>)</span>, and Crys-JEPA <span class="citation" data-cites="liu2026crysjepa">(<a href="#ref-liu2026crysjepa" role="doc-biblioref"><span class="nocase">Liu et al.</span> 2026</a>)</span>.</p>
+<section id="polymer-jepa" class="level3">
+<h3 class="anchored" data-anchor-id="polymer-jepa">Polymer JEPA</h3>
+<p>Polymer JEPA pretrains on polymer molecule graphs, then fine-tunes on downstream property prediction tasks <span class="citation" data-cites="piccoli2026polymerjepa">(<a href="#ref-piccoli2026polymerjepa" role="doc-biblioref">Piccoli et al. 2026</a>)</span>. This model found that JEPA self-supervised pretraining enhances downstream performance, particularly when labelled data is very scarce, with improvements across both tested datasets <span class="citation" data-cites="piccoli2026polymerjepa">(<a href="#ref-piccoli2026polymerjepa" role="doc-biblioref">Piccoli et al. 2026</a>)</span>. Concretely, they found an optimal context size around 60% of the full graph: roughly 10–15 atoms of a 20–25 atom polymer graph. The model is robust across a 50–80% context range, with degradation only when the context gets very small <span class="citation" data-cites="piccoli2026polymerjepa">(<a href="#ref-piccoli2026polymerjepa" role="doc-biblioref">Piccoli et al. 2026</a>)</span>.</p>
+</section>
+<section id="fragment-based-molecular-jepa" class="level3">
+<h3 class="anchored" data-anchor-id="fragment-based-molecular-jepa">Fragment-based molecular JEPA</h3>
+<p>Next, fragment-based molecular JEPA improves on the usual JEPA methodology by predicting fragments, such as functional groups, rather than node- and graph-level predictions <span class="citation" data-cites="fragjepa2026">(<a href="#ref-fragjepa2026" role="doc-biblioref">Wu et al. 2026</a>)</span>. Node-level information and structures are usually blind to higher-order molecular dynamics and semantics, while graph-level approaches overlook fine-grained structures <span class="citation" data-cites="fragjepa2026">(<a href="#ref-fragjepa2026" role="doc-biblioref">Wu et al. 2026</a>)</span>. The compromise is to predict at the fragment level in embedding space, which also serves as the correct unit for conveying meaning in chemistry.</p>
+</section>
+<section id="crys-jepa" class="level3">
+<h3 class="anchored" data-anchor-id="crys-jepa">Crys-JEPA</h3>
+<p>Crys-JEPA is the most distinctive in this lineage, as it does not solely rely on JEPA methodology <span class="citation" data-cites="liu2026crysjepa">(<a href="#ref-liu2026crysjepa" role="doc-biblioref"><span class="nocase">Liu et al.</span> 2026</a>)</span>. Instead, it takes advantage of JEPA’s low cost to use it as a screening method for more expensive yet more precise and accurate Density Functional Theory (DFT) calculations, saving time and compute <span class="citation" data-cites="liu2026crysjepa kohn1965dft">(<a href="#ref-liu2026crysjepa" role="doc-biblioref"><span class="nocase">Liu et al.</span> 2026</a>; <a href="#ref-kohn1965dft" role="doc-biblioref">Kohn and Sham 1965</a>)</span>. This model pretrains JEPA with an InfoNCE objective to build a crystal latent space, organized around formation energy <span class="citation" data-cites="liu2026crysjepa oord2018cpc">(<a href="#ref-liu2026crysjepa" role="doc-biblioref"><span class="nocase">Liu et al.</span> 2026</a>; <a href="#ref-oord2018cpc" role="doc-biblioref">Oord et al. 2018</a>)</span>. Similar to contrastive methods, formation energies with a small difference are grouped close by in the latent space, while larger differences appear farther apart. Thus, when prediction embeddings come through the model, their representation in latent space also conveys information on the general stability of the embedded crystal, saving much effort from DFT, allowing compute to be focused towards crystals which aren’t obviously unstable.</p>
+</section>
+</section>
+<section id="latent-space-vs.-coordinates" class="level2">
+<h2 class="anchored" data-anchor-id="latent-space-vs.-coordinates">Latent space vs.&nbsp;coordinates</h2>
 <p>The latent space approach does not beat a coordinates approach in every metric, but it does have its advantages, especially in materials science. JEPA’s embeddings represent semantic meaning, discarding coordinates but preserving properties. This means latent predictions are more efficient in achieving the goal of property prediction under label scarcity, a very real condition in the field of materials science. Meanwhile, symmetry-aware coordinate methods are much better at generating structures and placing atoms. This means that, to maximize effect, an ideal system would combine both approaches, with coordinate methods used for generation and JEPA used for screening to lower costs while maintaining quality.</p>
-<p>Based on these qualities, the direction I’m taking is a hierarchical JEPA for biomaterials property prediction, where the levels mirror the physical scales of the material: atoms to functional groups to molecular representation to the protein-adsorption interface. More information about that will come out once I have something running.</p>
+</section>
+<section id="where-this-is-going" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-is-going">Where this is going</h2>
+<p>Based on these qualities, the direction I’m taking is a hierarchical JEPA <span class="citation" data-cites="lecun2022path">(<a href="#ref-lecun2022path" role="doc-biblioref">LeCun 2022</a>)</span> for biomaterials property prediction, where the levels mirror the physical scales of the material: atoms to functional groups to molecular representation to the protein-adsorption interface. More information about that will come out once I have something running.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-assran2025vjepa2" class="csl-entry" role="listitem">
+Assran, Mahmoud, Adrien Bardes, David Fan, et al. 2025. <span>“V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning.”</span> <em>arXiv Preprint</em>. <a href="https://arxiv.org/abs/2506.09985">https://arxiv.org/abs/2506.09985</a>.
+</div>
+<div id="ref-assran2023ijepa" class="csl-entry" role="listitem">
+Assran, Mahmoud, Quentin Duval, Ishan Misra, et al. 2023. <span>“Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</em>, 15619–29. <a href="https://arxiv.org/abs/2301.08243">https://arxiv.org/abs/2301.08243</a>.
+</div>
+<div id="ref-dosovitskiy2021vit" class="csl-entry" role="listitem">
+Dosovitskiy, Alexey, Lucas Beyer, Alexander Kolesnikov, et al. 2021. <span>“An Image Is Worth 16x16 Words: Transformers for Image Recognition at Scale.”</span> <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://arxiv.org/abs/2010.11929">https://arxiv.org/abs/2010.11929</a>.
+</div>
+<div id="ref-he2022mae" class="csl-entry" role="listitem">
+He, Kaiming, Xinlei Chen, Saining Xie, Yanghao Li, Piotr Dollár, and Ross Girshick. 2022. <span>“Masked Autoencoders Are Scalable Vision Learners.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</em>, 16000–16009. <a href="https://arxiv.org/abs/2111.06377">https://arxiv.org/abs/2111.06377</a>.
+</div>
+<div id="ref-kohn1965dft" class="csl-entry" role="listitem">
+Kohn, W., and L. J. Sham. 1965. <span>“Self-Consistent Equations Including Exchange and Correlation Effects.”</span> <em>Physical Review</em> 140 (4A): A1133–38. <a href="https://doi.org/10.1103/PhysRev.140.A1133">https://doi.org/10.1103/PhysRev.140.A1133</a>.
+</div>
+<div id="ref-lecun2022path" class="csl-entry" role="listitem">
+LeCun, Yann. 2022. <span>“A Path Towards Autonomous Machine Intelligence, Version 0.9.2.”</span> <em>OpenReview</em>. <a href="https://openreview.net/pdf?id=BZ5a1r-kVsf">https://openreview.net/pdf?id=BZ5a1r-kVsf</a>.
+</div>
+<div id="ref-liu2026crysjepa" class="csl-entry" role="listitem">
+<span class="nocase">Liu, Nian et al.</span> 2026. <span>“Crys-JEPA: Accelerating Crystal Discovery via Embedding Screening and Generative Refinement.”</span> <em>arXiv Preprint</em>. <a href="https://arxiv.org/abs/2605.14759">https://arxiv.org/abs/2605.14759</a>.
+</div>
+<div id="ref-oord2018cpc" class="csl-entry" role="listitem">
+Oord, Aaron van den, Yazhe Li, and Oriol Vinyals. 2018. <span>“Representation Learning with Contrastive Predictive Coding.”</span> <em>arXiv Preprint</em>. <a href="https://arxiv.org/abs/1807.03748">https://arxiv.org/abs/1807.03748</a>.
+</div>
+<div id="ref-piccoli2026polymerjepa" class="csl-entry" role="listitem">
+Piccoli, Francesco, Gabriel Vogel, and Jana M. Weber. 2026. <span>“Joint Embedding Predictive Architecture for Self-Supervised Pretraining on Polymer Molecular Graphs.”</span> <em>Digital Discovery</em>. <a href="https://arxiv.org/abs/2506.18194">https://arxiv.org/abs/2506.18194</a>.
+</div>
+<div id="ref-skenderi2023graphjepa" class="csl-entry" role="listitem">
+Skenderi, Geri, Alessandro Bicciato, Luca Cosmo, and Andrea Torsello. 2023. <span>“Graph-Level Representation Learning with Joint-Embedding Predictive Architectures.”</span> <em>arXiv Preprint</em>. <a href="https://arxiv.org/abs/2309.16014">https://arxiv.org/abs/2309.16014</a>.
+</div>
+<div id="ref-fragjepa2026" class="csl-entry" role="listitem">
+Wu, Jiele, Haozhe Ma, Zhihan Guo, Thanh Vinh Vo, and Tze Yun Leong. 2026. <span>“Hierarchical Molecular Representation Learning via Fragment-Based Self-Supervised Embedding Prediction.”</span> <em>arXiv Preprint</em>. <a href="https://arxiv.org/abs/2602.20344">https://arxiv.org/abs/2602.20344</a>.
+</div>
+</div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -85,9 +85,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -182,7 +182,7 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(1)</span></div><div class="category" data-category="SkVQQQ==">JEPA <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bWF0ZXJpYWxz">materials <span class="quarto-category-count">(1)</span></div><div class="category" data-category="TUw=">ML <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
@@ -195,7 +195,7 @@ window.Quarto = {
 
 <div class="quarto-listing quarto-listing-container-default" id="listing-listing">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="SkVQQSUyQ21hdGVyaWFscyUyQ01M" data-listing-date-sort="1786334400000" data-listing-file-modified-sort="1786398732257" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1049">
+<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1786511056000" data-listing-file-modified-sort="1786511056467" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1113">
 <div class="thumbnail"><a href="./posts/why-jepa-for-materials/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -203,25 +203,22 @@ window.Quarto = {
 </a></div>
 <div class="body">
 <h3 class="no-anchor listing-title">
-<a href="./posts/why-jepa-for-materials/index.html" class="no-external">Why JEPA For Materials Property Prediction</a>
+<a href="./posts/why-jepa-for-materials/index.html" class="no-external">An Introduction to Joint Embedding Predictive Architectures</a>
 </h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('SkVQQQ=='); return false;">JEPA</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0ZXJpYWxz'); return false;">materials</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('TUw='); return false;">ML</div>
-
+<div class="listing-subtitle">
+<a href="./posts/why-jepa-for-materials/index.html" class="no-external">From the JEPA recipe to latent-space property prediction in materials science</a>
 </div>
 <div class="delink listing-description"><a href="./posts/why-jepa-for-materials/index.html" class="no-external">
-<p>Predicting representations instead of data, and why that fits materials science.</p>
+Joint Embedding Predictive Architecture (JEPA) is defined by predicting the representation of missing data, not the data itself, a move described in LeCun’s 2022 position…<span class="citation" data-cites="lecun2022path"></span><span class="citation" data-cites="lecun2022path assran2023ijepa"></span>
 </a></div>
 </div>
 <div class="metadata">
 <a href="./posts/why-jepa-for-materials/index.html" class="no-external">
 <div class="listing-date">
-Aug 10, 2026
+Aug 12, 2026
+</div>
+<div class="listing-author">
+Aaron Lin
 </div>
 </a>
 </div>
