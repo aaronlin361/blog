@@ -1,0 +1,21 @@
+# crystal-graphs-mcp — runtime dependencies
+
+# MCP server framework (FastMCP + CLI helpers).
+mcp[cli]>=1.2
+
+# Crystal graph construction + the CGCNN model the tools reuse.
+torch>=2.2
+numpy>=1.26
+
+# Crystal structures, symmetry, periodic neighbour finding.
+pymatgen>=2024.1
+
+# Materials Project API client (for the three MP-backed tools).
+mp-api>=0.41
+
+# PIN, NOT A PREFERENCE.
+# emmet-core 0.86.x declares Requires-Python >=3.10 but imports
+# typing.NotRequired, which only exists on 3.11+. On 3.10 it installs and then
+# fails at import (`cannot import name 'NotRequired'`). This pin keeps 3.10
+# working; on 3.11+ it is harmless. Drop it once upstream fixes the metadata.
+emmet-core<0.86

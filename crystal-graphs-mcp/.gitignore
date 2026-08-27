@@ -1,0 +1,15 @@
+# Secrets — the Materials Project key lives in the environment, never in git.
+.env
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Content-hashed graph cache produced by the pipeline
+cache/
+
+# macOS
+.DS_Store
